@@ -1,0 +1,21 @@
+// --- maven-like provided scope surrogate --- //
+
+apply plugin: 'idea'
+
+
+configurations {
+	provided
+	compile.extendsFrom provided
+}
+
+sourceSets {
+	main.compileClasspath += configurations.provided
+	test.compileClasspath += configurations.provided
+	test.runtimeClasspath += configurations.provided
+}
+
+idea {
+	module {
+		scopes.PROVIDED.plus += [configurations.provided]
+	}
+}
