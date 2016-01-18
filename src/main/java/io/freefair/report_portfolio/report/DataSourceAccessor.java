@@ -6,10 +6,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -88,20 +85,22 @@ public class DataSourceAccessor {
 	}
 
 	private void prepareData(Entry current) {
-		String data = current.getData();
-		Document parse = Jsoup.parse(data);
-		Elements ul = parse.getElementsByTag("ul");
-		for(Element element : ul){
-			Elements li = element.getElementsByTag("li");
-			for(Element text : li){
-				text.replaceWith(new TextNode("- " + text.text() + "\n", ""));
+		String text = current.getData();
+		if(text.contains("<")) {
+			Document parse = Jsoup.parse(text);
+			Elements ul = parse.getElementsByTag("ul");
+			for (Element element : ul) {
+				Elements li = element.getElementsByTag("li");
+				for (Element elem : li) {
+					elem.replaceWith(new TextNode("- " + elem.text() + "\n", ""));
+				}
+				element.replaceWith(new TextNode(ul.text(), ""));
 			}
-			element.replaceWith(new TextNode(ul.text(), ""));
+			text = parse.text();
+			text = text.replace(" - ", "\n - ");
+			if (text.startsWith("\n"))
+				text = text.substring(1);
 		}
-		String text = parse.text();
-		text = text.replace(" - ", "\n - ");
-		if(text.startsWith("\n"))
-			text = text.substring(1);
 		current.setData(text.replaceAll("\"$", "").replaceAll("^\"", ""));
 	}
 
@@ -127,6 +126,19 @@ public class DataSourceAccessor {
 		List<Entry> entries = this.entries.stream().sorted((e,e2) -> e.getDate().compareTo(e2.getDate())).collect(Collectors.toList());
 		for(Entry e : entries){
 			System.out.println(e.toCvsString());
+		}
+	}
+
+	public void saveToFile(String filename){
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))){
+			List<Entry> entries = this.entries.stream().sorted((e,e2) -> e.getDate().compareTo(e2.getDate())).collect(Collectors.toList());
+			for(Entry e : entries){
+				String data = e.toCvsString();
+				writer.write(data, 0, data.length());
+				writer.newLine();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 }

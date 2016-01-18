@@ -2,7 +2,7 @@ package io.freefair.report_portfolio;
 
 import io.freefair.report_portfolio.cli.Argparse;
 import io.freefair.report_portfolio.cli.ArgumentList;
-import io.freefair.report_portfolio.gui.MyFrame;
+import io.freefair.report_portfolio.gui.MyFrameApplication;
 import io.freefair.report_portfolio.report.DataSourceAccessor;
 import io.freefair.report_portfolio.report.Entry;
 import io.freefair.report_portfolio.report.EntryGenerator;
@@ -12,9 +12,7 @@ import lombok.val;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Main
 {
@@ -32,8 +30,9 @@ public class Main
 
 		String generatePdf = arguments.get("pdf");
 
-		if(gui != null && gui.equalsIgnoreCase("true")){
-			new MyFrame(dataSource);
+		if(gui != null && gui.equalsIgnoreCase("true")) {
+			MyFrameApplication application = new MyFrameApplication();
+			application.doLaunch(null);
 			return;
 		}
 

@@ -40,13 +40,18 @@ public class PdfFileGenerator {
 			document.open();
 
 			writeHeader(document);
-
+			writePadding(document);
 			writeContent(document);
 
 			document.close();
 		} catch (DocumentException | FileNotFoundException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void writePadding(Document document) throws DocumentException {
+		Paragraph paragraph = new Paragraph();
+		document.add(paragraph);
 	}
 
 	private void writeContent(Document document) throws DocumentException {

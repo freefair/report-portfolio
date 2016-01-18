@@ -4,17 +4,20 @@ import io.freefair.report_portfolio.report.DataSourceAccessor;
 import io.freefair.report_portfolio.report.Entry;
 
 import javax.swing.*;
+import javax.swing.plaf.FileChooserUI;
+import javax.swing.plaf.basic.BasicFileChooserUI;
 import javax.swing.text.DateFormatter;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyFrame extends JFrame
+public class MyFrame_old extends JFrame
 {
 	DataSourceAccessor accessor;
 
-	public MyFrame(String dataSource){
+	public MyFrame_old(String dataSource){
 		super("Report portfolio");
 
 		accessor = new DataSourceAccessor(dataSource);
@@ -48,6 +51,12 @@ public class MyFrame extends JFrame
 		btnSave.addActionListener(a -> save());
 		panel.add(btnSave);
 
+		JButton btnToday = new JButton();
+		btnToday.setText("Today");
+		btnToday.setBounds(460, 10, 150, 25);
+		btnToday.addActionListener(a -> today());
+		panel.add(btnToday);
+
 		buildInputArea(0, panel);
 		buildInputArea(1, panel);
 		buildInputArea(2, panel);
@@ -58,8 +67,19 @@ public class MyFrame extends JFrame
 		setSize(600, 600);
 	}
 
+	private void today() {
+		currentMonday = LocalDate.now();
+		while(currentMonday.getDayOfWeek() != DayOfWeek.MONDAY)
+		{
+			currentMonday = currentMonday.minusDays(1);
+		}
+		updateData();
+	}
+
 	private void save() {
-		accessor.save();
+		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.showSaveDialog(this);
+		accessor.saveToFile(fileChooser.getSelectedFile().getAbsolutePath());
 	}
 
 	private void prev() {
@@ -73,6 +93,7 @@ public class MyFrame extends JFrame
 	}
 
 	private void updateData() {
+		writeDataToObjects();
 		currentEntries.clear();
 		for(int i = 0; i < 5; i++){
 			List<Entry> byDate = accessor.getByDate(currentMonday.plusDays(i));
@@ -88,6 +109,16 @@ public class MyFrame extends JFrame
 				entry = byDate.get(0);
 			updateField(i, entry);
 			currentEntries.add(entry);
+		}
+	}
+
+	private void writeDataToObjects() {
+		for(int i = 0; i < currentEntries.size(); i++){
+			Entry entry = currentEntries.get(i);
+			String text = textAreas.get(i).getText();
+			entry.setData(text);
+			entry.setTime(Double.parseDouble(timeFields.get(i).getText()));
+			entry.setDate(LocalDate.from(DateTimeFormatter.ofPattern("dd.MM.yyyy").parse(dateFields.get(i).getText())).atStartOfDay());
 		}
 	}
 
